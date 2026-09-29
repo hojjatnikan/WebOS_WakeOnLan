@@ -1,0 +1,22 @@
+# Build output
+dist/
+*.ipk
+
+# Generated icons - recreate them with "npm run icons"
+icon.png
+largeIcon.png
+store/
+
+# Tool state that would otherwise be packaged into the ipk
+.mimosa/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# ares-cli working files
+.ares/
+*.log

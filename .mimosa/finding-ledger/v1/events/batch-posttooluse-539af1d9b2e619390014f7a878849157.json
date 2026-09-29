@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "posttooluse-539af1d9b2e619390014f7a878849157",
+  "runId": null,
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "PostToolUse"
+  },
+  "revision": null,
+  "diffHash": null,
+  "rulesVersion": null,
+  "sessionHash": "cc89ffd1b2f175d44e7243957be87a45a2687f2d8a202a9c39a6f9827df9c3da",
+  "reportRef": null,
+  "events": [
+    {
+      "eventId": "hook-c7490a394caaf28b62e048332951dad2",
+      "findingId": "mimosa-8e99b55863c91d6941e4c9ac",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:44:55.594Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 263,
+      "endLine": 263,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f"
+      },
+      "sequence": 0
+    }
+  ],
+  "observedFindingIds": [],
+  "verifiedFiles": [],
+  "recordedAt": "2026-09-28T18:44:56.045Z"
+}

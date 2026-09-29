@@ -1,0 +1,10 @@
+{
+  "id": "com.zcode.wol.service",
+  "description": "Wake On LAN magic packet sender and LAN discovery helper",
+  "services": [
+    {
+      "name": "com.zcode.wol.service",
+      "description": "Wake On LAN magic packet sender and LAN discovery helper"
+    }
+  ]
+}

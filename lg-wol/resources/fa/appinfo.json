@@ -1,0 +1,16 @@
+{
+  "id": "com.zcode.wol",
+  "version": "1.0.0",
+  "vendor": "ZCode",
+  "type": "web",
+  "main": "index.html",
+  "title": "بیدارباش شبکه",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "requiredPermissions": [
+    "internet"
+  ],
+  "requiredACG": [],
+  "disableBackHistoryAPI": true,
+  "handlesRelaunch": true
+}

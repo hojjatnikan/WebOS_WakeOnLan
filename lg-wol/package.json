@@ -1,0 +1,38 @@
+{
+  "name": "lg-wol",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Wake On LAN for LG webOS TVs - wake sleeping computers on the local network from the TV",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.15.1 <17"
+  },
+  "scripts": {
+    "icons": "node tools/make-icons.js",
+    "test": "node tools/selftest.js",
+    "check": "ares-package --check .",
+    "package": "ares-package -e \".mimosa\" -e \"tools\" -e \"store\" -e \"dist\" -e \"*.md\" -e \".gitignore\" -o dist .",
+    "package:debug": "ares-package --no-minify -e \".mimosa\" -e \"tools\" -e \"store\" -e \"dist\" -e \"*.md\" -e \".gitignore\" -o dist .",
+    "build": "npm run icons && npm run test && npm run check && npm run package",
+    "install:tv": "ares-install --device tv dist/com.zcode.wol_1.0.0_all.ipk",
+    "launch": "ares-launch --device tv com.zcode.wol",
+    "inspect": "ares-inspect --device tv --app com.zcode.wol",
+    "log": "ares-log --device tv -n 200",
+    "device:add": "ares-setup-device",
+    "device:list": "ares-setup-device --list",
+    "device:verify": "ares-device --system-info --device tv",
+    "device:key": "ares-novacom --device tv --getkey",
+    "tv:attach": "ares-novacom --device tv -f -p 9998:9998",
+    "tv:inspect": "node tools/tv-inspect.js",
+    "tv:console": "node tools/tv-inspect.js --watch"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "webos",
+    "lg",
+    "tv",
+    "wake-on-lan",
+    "wol",
+    "magic-packet"
+  ]
+}

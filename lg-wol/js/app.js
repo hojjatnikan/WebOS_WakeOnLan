@@ -1,0 +1,1259 @@
+/*
+ * Views and interaction.
+ *
+ * Rendering is a plain string build into innerHTML. There is no framework here
+ * on purpose: the whole app is five screens, and a build step plus a runtime
+ * would cost more to maintain than this file does. Two rules keep it honest -
+ * every interpolated value goes through esc(), and the device list is only
+ * re-rendered when it actually changes. Status updates (which happen while the
+ * user is navigating) patch the pill in place so the highlight is never lost.
+ */
+
+(function (global) {
+  'use strict';
+
+  var TARGET_VERSION = '1.0.0';
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  var state = {
+    view: 'devices',
+    settings: {},
+    interfaces: [],
+    broadcasts: [],
+    arpEntries: [],
+    scanFound: [],
+    scan: { id: null, running: false, timer: null },
+    status: {},
+    pendingProbe: {},
+    backupPath: '',
+    version: TARGET_VERSION
+  };
+
+  var modal = {
+    open: false,
+    kind: null,
+    pane: null,
+    payload: null
+  };
+
+  /* ------------------------------------------------------------------ util */
+
+  function esc(value) {
+    return String(value === null || typeof value === 'undefined' ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function t(key, vars) {
+    return global.I18N.t(key, vars);
+  }
+
+  function toast(message, kind) {
+    var node = document.createElement('div');
+    node.className = 'toast ' + (kind || '');
+    node.textContent = message;
+    $('toastRoot').appendChild(node);
+    setTimeout(function () {
+      if (node.parentNode) node.parentNode.removeChild(node);
+    }, 4600);
+  }
+
+  function setStatusLine(message) {
+    $('statusText').textContent = message;
+  }
+
+  function pad2(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+
+  function formatStamp(ts) {
+    if (!ts) return '—';
+    var d = new Date(ts);
+    return pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ' ' + pad2(d.getDate()) + '.' + pad2(d.getMonth() + 1);
+  }
+
+  function statusLabel(status) {
+    if (status === 'online') return t('status.online');
+    if (status === 'offline') return t('status.offline');
+    if (status === 'probing') return t('status.probing');
+    if (status === 'sending') return t('status.sending');
+    if (status === 'woke') return t('status.woke');
+    return t('status.unknown');
+  }
+
+  function statusClass(status) {
+    if (status === 'online') return 'online';
+    if (status === 'offline') return 'offline';
+    if (status === 'probing' || status === 'sending') return 'busy';
+    return '';
+  }
+
+  /* --------------------------------------------------------------- language */
+
+  function detectLanguage() {
+    var candidates = [];
+    try {
+      if (navigator.languages && navigator.languages.length) candidates = candidates.concat(navigator.languages);
+    } catch (e) { /* older engines */ }
+    if (navigator.language) candidates.push(navigator.language);
+    try {
+      if (navigator.userLanguage) candidates.push(navigator.userLanguage);
+    } catch (e) { /* IE only */ }
+
+    for (var i = 0; i < candidates.length; i++) {
+      var code = String(candidates[i] || '').toLowerCase().substr(0, 2);
+      for (var j = 0; j < I18N.languages.length; j++) {
+        if (I18N.languages[j].code === code) return code;
+      }
+    }
+    return 'en';
+  }
+
+  function applyLanguage(code) {
+    I18N.set(code);
+    renderLanguageOptions();
+    renderDevices();
+    renderHosts();
+    renderArpChips();
+    renderInterfaces();
+    updateScanLabels();
+  }
+
+  function renderLanguageOptions() {
+    var current = I18N.code();
+    var html = '';
+    I18N.languages.forEach(function (lang) {
+      html += '<button type="button" class="option' + (lang.code === current ? ' active' : '') + '"' +
+        ' data-nav data-lang="' + esc(lang.code) + '">' + esc(lang.label) + '</button>';
+    });
+    $('langRow').innerHTML = html;
+  }
+
+  /* ----------------------------------------------------------------- views */
+
+  function showView(name) {
+    state.view = name;
+
+    ['devices', 'discover', 'settings'].forEach(function (view) {
+      var section = $('view-' + view);
+      if (view === name) section.classList.remove('hidden');
+      else section.classList.add('hidden');
+    });
+
+    var tabs = $('tabs').querySelectorAll('.tab');
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].getAttribute('data-tab') === name) tabs[i].classList.add('active');
+      else tabs[i].classList.remove('active');
+    }
+
+    var firstFocusable = $('tabs').querySelector('[data-tab="' + name + '"]');
+    Nav.refresh(firstFocusable);
+
+    if (name === 'discover') loadDiscovery();
+    if (name === 'settings') renderSettings();
+  }
+
+  /* --------------------------------------------------------------- devices */
+
+  function renderDevices() {
+    var devices = Store.devices.list();
+    $('deviceCounter').textContent = devices.length ? t('counter.devices', { count: devices.length }) : '';
+
+    if (!devices.length) {
+      $('deviceGrid').innerHTML = '';
+      $('devicesEmpty').classList.remove('hidden');
+      return;
+    }
+
+    $('devicesEmpty').classList.add('hidden');
+
+    var html = '';
+    devices.forEach(function (device) {
+      var status = state.status[device.id] || 'unknown';
+      var vendor = global.OUI.vendorFor(device.mac);
+      var randomised = global.OUI.isRandomised(device.mac);
+
+      html += '<div class="card' + (status === 'online' ? ' awake' : '') + '" data-card="' + esc(device.id) + '">';
+
+      html += '<div class="card-head">';
+      html += '<div class="card-title">';
+      html += '<h3>' + esc(device.name) + '</h3>';
+      html += '<span class="card-mac">' + esc(device.mac) + '</span>';
+      html += '</div>';
+      html += '<span class="status-pill ' + statusClass(status) + '" data-status="' + esc(device.id) + '">' +
+        esc(statusLabel(status)) + '</span>';
+      html += '</div>';
+
+      html += '<div class="card-meta">';
+      html += '<span>' + esc(t('label.ip')) + ' <b>' + esc(device.ip || '—') + '</b></span>';
+      html += '<span>' + esc(t('label.port')) + ' <b>' + esc(effectivePort(device)) + '</b></span>';
+      var maker = randomised ? t('vendor.unknown') : (vendor || t('vendor.unknown'));
+      html += '<span>' + esc(t('label.vendor')) + ' <b>' + esc(maker) + '</b></span>';
+      if (device.lastWakeAt) {
+        html += '<span>' + esc(t('label.lastWake')) + ' <b>' + esc(formatStamp(device.lastWakeAt)) + '</b></span>';
+      }
+      html += '</div>';
+
+      if (device.wakeOn) {
+        html += '<div class="card-meta"><span>' + esc(device.wakeOn) + '</span></div>';
+      }
+
+      html += '<div class="card-actions">';
+      html += '<button type="button" class="btn primary small" data-nav data-action="wake" data-id="' + esc(device.id) + '">' +
+        esc(t('action.wake')) + '</button>';
+      html += '<button type="button" class="btn small" data-nav data-action="probe" data-id="' + esc(device.id) + '">' +
+        esc(t('action.probe')) + '</button>';
+      html += '<button type="button" class="btn small" data-nav data-action="edit" data-id="' + esc(device.id) + '">' +
+        esc(t('action.edit')) + '</button>';
+      html += '<button type="button" class="btn small danger" data-nav data-action="delete" data-id="' + esc(device.id) + '">' +
+        esc(t('action.delete')) + '</button>';
+      html += '</div>';
+
+      html += '</div>';
+    });
+
+    $('deviceGrid').innerHTML = html;
+  }
+
+  function effectivePort(device) {
+    return device.port || state.settings.port || 9;
+  }
+
+  function updateCardStatus(id) {
+    var status = state.status[id] || 'unknown';
+    var pill = document.querySelector('[data-status="' + id + '"]');
+    if (pill) {
+      pill.className = 'status-pill ' + statusClass(status);
+      pill.textContent = statusLabel(status);
+    }
+    var card = document.querySelector('[data-card="' + id + '"]');
+    if (card) {
+      if (status === 'online') card.classList.add('awake');
+      else card.classList.remove('awake');
+    }
+    var buttons = document.querySelectorAll('[data-card="' + id + '"] .card-actions .btn');
+    var busy = status === 'sending' || status === 'probing';
+    for (var i = 0; i < buttons.length; i++) buttons[i].disabled = busy;
+  }
+
+  function setStatus(id, status) {
+    state.status[id] = status;
+    updateCardStatus(id);
+  }
+
+  /* ----------------------------------------------------------- wake & probe */
+
+  function wakeDevice(device, options) {
+    var opts = options || {};
+    setStatus(device.id, 'sending');
+    setStatusLine(t('status.sending') + ' ' + device.name);
+
+    return Luna.request('send', {
+      mac: device.mac,
+      ip: device.ip || null,
+      port: effectivePort(device),
+      broadcast: device.broadcast || state.settings.broadcast || null,
+      repeat: state.settings.repeat,
+      intervalMs: state.settings.intervalMs
+    }).then(function (result) {
+      Store.devices.markWoken(device.id);
+      setStatus(device.id, 'woke');
+
+      toast(t('toast.woke', {
+        name: device.name,
+        ok: result.delivered,
+        total: result.attempts
+      }), result.delivered > 0 ? 'ok' : 'err');
+
+      setStatusLine(t('status.woke') + ': ' + device.name);
+
+      // A machine needs a while to POST, so one immediate check would be
+      // misleading. Poll a few times and stop as soon as it answers.
+      if (state.settings.autoProbe && device.ip && !opts.noVerify) {
+        scheduleVerify(device, [6000, 14000, 26000]);
+      } else {
+        setTimeout(function () {
+          if (state.status[device.id] === 'woke') setStatus(device.id, 'unknown');
+        }, 2500);
+      }
+
+      return result;
+    }).catch(function (err) {
+      setStatus(device.id, 'unknown');
+      var message = err && err.message ? err.message : String(err);
+      if (message === 'INVALID_MAC') message = t('error.macInvalid');
+      toast(t('toast.wakeFailed', { name: device.name, error: message }), 'err');
+      setStatusLine(t('status.ready'));
+      throw err;
+    });
+  }
+
+  function scheduleVerify(device, delays) {
+    if (state.pendingProbe[device.id]) return;
+    state.pendingProbe[device.id] = true;
+
+    var index = 0;
+    function attempt() {
+      if (index >= delays.length) {
+        delete state.pendingProbe[device.id];
+        if (state.status[device.id] !== 'online') setStatus(device.id, 'offline');
+        return;
+      }
+      var wait = delays[index++];
+      setTimeout(function () {
+        probeDevice(device, { silent: true }).then(function (alive) {
+          if (alive) {
+            delete state.pendingProbe[device.id];
+            toast(t('toast.online', { name: device.name }), 'ok');
+          } else {
+            attempt();
+          }
+        });
+      }, wait);
+    }
+    attempt();
+  }
+
+  function probeDevice(device, options) {
+    var opts = options || {};
+    if (!device.ip) {
+      if (!opts.silent) toast(t('error.ipInvalid'), 'err');
+      return Promise.resolve(false);
+    }
+
+    setStatus(device.id, 'probing');
+
+    return Luna.request('probe', {
+      ip: device.ip,
+      timeoutMs: state.settings.timeoutMs,
+      ports: [effectivePort(device), 80, 443, 22, 3389, 445]
+    }).then(function (result) {
+      setStatus(device.id, result.alive ? 'online' : 'offline');
+      if (!opts.silent) {
+        toast(result.alive ? t('toast.online', { name: device.name }) : t('toast.offline', { name: device.name }),
+          result.alive ? 'ok' : 'err');
+      }
+      return !!result.alive;
+    }).catch(function () {
+      setStatus(device.id, 'offline');
+      return false;
+    });
+  }
+
+  function refreshAllStatuses() {
+    var devices = Store.devices.list().filter(function (device) { return !!device.ip; });
+    if (!devices.length) {
+      toast(t('toast.noIpToProbe'), 'err');
+      return;
+    }
+    setStatusLine(t('status.probing'));
+
+    var index = 0;
+    function next() {
+      if (index >= devices.length) {
+        setStatusLine(t('status.ready'));
+        return;
+      }
+      var device = devices[index++];
+      probeDevice(device, { silent: true }).then(next);
+    }
+    next();
+  }
+
+  function wakeAll() {
+    var devices = Store.devices.list();
+    if (!devices.length) return;
+
+    toast(t('toast.wakeAll', { count: devices.length }), 'ok');
+
+    var index = 0;
+    function next() {
+      if (index >= devices.length) {
+        setTimeout(function () { refreshAllStatuses(); }, 8000);
+        return;
+      }
+      var device = devices[index++];
+      wakeDevice(device, { noVerify: true }).then(function () {
+        setTimeout(next, 300);
+      }, function () {
+        setTimeout(next, 300);
+      });
+    }
+    next();
+  }
+
+  /* --------------------------------------------------------------- discover */
+
+  function loadDiscovery() {
+    Luna.request('network').then(function (result) {
+      state.interfaces = result.interfaces || [];
+      state.broadcasts = result.broadcasts || [];
+      renderInterfaces();
+      updateNetworkBadge();
+    }).catch(function () {
+      renderInterfaces();
+      updateNetworkBadge();
+    });
+
+    loadArp();
+  }
+
+  function updateNetworkBadge() {
+    var badge = $('netBadge');
+    if (state.interfaces.length) {
+      var first = state.interfaces[0];
+      $('netBadgeText').textContent = first.address + ' · ' + first.name;
+      badge.className = 'netbadge up';
+    } else {
+      $('netBadgeText').textContent = '—';
+      badge.className = 'netbadge down';
+    }
+  }
+
+  function renderInterfaces() {
+    if (!state.interfaces.length) {
+      $('ifaceList').innerHTML = '<div class="iface"><b>—</b><span class="sub">' +
+        esc(t('discover.noInterface')) + '</span></div>';
+      return;
+    }
+
+    var html = '';
+    state.interfaces.forEach(function (iface) {
+      html += '<div class="iface">';
+      html += '<b>' + esc(iface.name) + '</b>';
+      html += '<div>' + esc(iface.address) + ' / ' + esc(iface.netmask) + '</div>';
+      html += '<div class="sub">' + esc(iface.mac) + '</div>';
+      html += '</div>';
+    });
+
+    if (state.broadcasts.length) {
+      html += '<div class="iface"><b>broadcast</b><div><code>' +
+        esc(state.broadcasts.join('</code> <code>')) + '</code></div>' +
+        '<div class="sub">' + esc(t('discover.alwaysBroadcast')) + '</div></div>';
+    }
+
+    $('ifaceList').innerHTML = html;
+  }
+
+  function loadArp() {
+    return Luna.request('arp').then(function (result) {
+      state.arpEntries = result.entries || [];
+      renderArpChips();
+      renderHosts();
+      return state.arpEntries;
+    }).catch(function () {
+      state.arpEntries = [];
+      renderArpChips();
+      renderHosts();
+      return [];
+    });
+  }
+
+  function renderArpChips() {
+    var container = $('arpChips');
+    if (!state.arpEntries.length) {
+      container.innerHTML = '<span class="chip">' + esc(t('toast.arpNone')) + '</span>';
+      return;
+    }
+
+    var html = '';
+    state.arpEntries.forEach(function (entry) {
+      var vendor = global.OUI.vendorFor(entry.mac);
+      html += '<button type="button" class="chip" data-nav data-arp="' + esc(entry.ip) + '" data-mac="' + esc(entry.mac) + '">';
+      html += '<b>' + esc(entry.ip) + '</b>';
+      html += '<code>' + esc(entry.mac) + '</code>';
+      if (vendor) html += '<span class="sub">' + esc(vendor) + '</span>';
+      html += '</button>';
+    });
+    container.innerHTML = html;
+  }
+
+  function mergedHosts() {
+    var byIp = {};
+
+    state.scanFound.forEach(function (host) {
+      byIp[host.ip] = {
+        ip: host.ip,
+        mac: host.mac || null,
+        openPorts: host.openPorts || [],
+        live: true
+      };
+    });
+
+    state.arpEntries.forEach(function (entry) {
+      if (byIp[entry.ip]) {
+        if (!byIp[entry.ip].mac) byIp[entry.ip].mac = entry.mac;
+      } else {
+        byIp[entry.ip] = { ip: entry.ip, mac: entry.mac, openPorts: [], live: false };
+      }
+    });
+
+    return Object.keys(byIp).map(function (key) {
+      return byIp[key];
+    }).sort(function (a, b) {
+      return lastOctet(a.ip) - lastOctet(b.ip);
+    });
+  }
+
+  function lastOctet(ip) {
+    var parts = String(ip).split('.');
+    return parseInt(parts[3], 10) || 0;
+  }
+
+  function renderHosts() {
+    var hosts = mergedHosts();
+    var body = $('hostTableBody');
+
+    if (!hosts.length) {
+      body.innerHTML = '';
+      $('hostsEmpty').classList.remove('hidden');
+      $('hostTable').classList.add('hidden');
+      return;
+    }
+
+    $('hostsEmpty').classList.add('hidden');
+    $('hostTable').classList.remove('hidden');
+
+    var html = '';
+    hosts.forEach(function (host) {
+      var vendor = host.mac ? global.OUI.vendorFor(host.mac) : null;
+      var macCell = host.mac
+        ? esc(host.mac) + (vendor ? ' <span class="sub">' + esc(vendor) + '</span>' : '')
+        : '<span class="sub">' + esc(t('discover.macUnknown')) + '</span>';
+
+      html += '<tr>';
+      html += '<td class="mono">' + esc(host.ip) + '</td>';
+      html += '<td class="mono">' + macCell + '</td>';
+      html += '<td>' + (host.openPorts && host.openPorts.length ? esc(host.openPorts.join(', ')) : '—') + '</td>';
+      html += '<td>' + esc(host.live ? t('label.sourceScan') : 'ARP') + '</td>';
+      html += '<td class="col-action">';
+      if (host.mac) {
+        html += '<button type="button" class="btn small" data-nav data-addhost="' + esc(host.ip) + '" data-mac="' + esc(host.mac) + '">' +
+          esc(t('action.saveAsDevice')) + '</button>';
+      }
+      html += '</td>';
+      html += '</tr>';
+    });
+
+    body.innerHTML = html;
+  }
+
+  function updateScanLabels() {
+    if (!state.scan.running) return;
+    var label = $('scanLabel');
+    if (label) label.textContent = t('status.probing');
+  }
+
+  function startScan() {
+    var ports = [9, 80, 443];
+
+    $('btnScan').classList.add('hidden');
+    $('btnScanStop').classList.remove('hidden');
+    $('scanBar').classList.remove('hidden');
+    $('scanProgress').style.width = '0%';
+    $('scanLabel').textContent = t('status.probing');
+    setStatusLine(t('status.probing'));
+
+    Luna.request('scanStart', {
+      ports: ports,
+      timeoutMs: state.settings.timeoutMs,
+      concurrency: 48
+    }).then(function (result) {
+      state.scan.id = result.scanId;
+      state.scan.running = true;
+      state.scanFound = [];
+      toast(t('toast.scanStarted', { total: result.total }), 'ok');
+      pollScan();
+    }).catch(function (err) {
+      stopScanUi();
+      toast(t('toast.wakeFailed', { name: t('action.scan'), error: err && err.message ? err.message : err }), 'err');
+    });
+  }
+
+  function pollScan() {
+    if (state.scan.timer) clearTimeout(state.scan.timer);
+
+    state.scan.timer = setTimeout(function () {
+      Luna.request('scanStatus', { scanId: state.scan.id }).then(function (result) {
+        var total = result.total || 1;
+        var done = result.done || 0;
+        var percent = Math.max(0, Math.min(100, Math.round((done / total) * 100)));
+
+        $('scanProgress').style.width = percent + '%';
+        $('scanLabel').textContent = done + ' / ' + total;
+
+        var found = result.found || [];
+        if (found.length !== state.scanFound.length) {
+          state.scanFound = found;
+          renderHosts();
+          Nav.refresh();
+        }
+
+        if (result.status === 'running') {
+          pollScan();
+        } else {
+          state.scan.running = false;
+          stopScanUi();
+          setStatusLine(t('status.ready'));
+          toast(t('toast.scanDone', { count: state.scanFound.length }), 'ok');
+        }
+      }).catch(function () {
+        state.scan.running = false;
+        stopScanUi();
+      });
+    }, 700);
+  }
+
+  function stopScan() {
+    Luna.call('scanCancel', {}, function () { /* best effort */ });
+    state.scan.running = false;
+    if (state.scan.timer) clearTimeout(state.scan.timer);
+    stopScanUi();
+    setStatusLine(t('status.ready'));
+  }
+
+  function stopScanUi() {
+    $('btnScan').classList.remove('hidden');
+    $('btnScanStop').classList.add('hidden');
+    $('scanBar').classList.add('hidden');
+  }
+
+  /* --------------------------------------------------------------- settings */
+
+  function renderSettings() {
+    var settings = state.settings;
+    $('setPort').value = settings.port;
+    $('setRepeat').value = settings.repeat;
+    $('setInterval').value = settings.intervalMs;
+    $('setTimeout').value = settings.timeoutMs;
+    $('setBroadcast').value = settings.broadcast || '';
+    $('autoProbe').checked = !!settings.autoProbe;
+    renderBackupPath();
+  }
+
+  function renderBackupPath() {
+    $('backupPath').textContent = state.backupPath || '';
+  }
+
+  // Text inputs commit on change (which fires on blur) and on Enter. Both paths
+  // land here; identical values are a no-op so double-committing is harmless.
+  function commitSettings() {
+    var patch = {
+      port: clampInt($('setPort').value, 1, 65535, 9),
+      repeat: clampInt($('setRepeat').value, 1, 10, 3),
+      intervalMs: clampInt($('setInterval').value, 20, 2000, 120),
+      timeoutMs: clampInt($('setTimeout').value, 100, 4000, 400),
+      broadcast: String($('setBroadcast').value || '').trim(),
+      autoProbe: $('autoProbe').checked
+    };
+
+    state.settings = Store.settings.save(patch);
+
+    $('setPort').value = state.settings.port;
+    $('setRepeat').value = state.settings.repeat;
+    $('setInterval').value = state.settings.intervalMs;
+    $('setTimeout').value = state.settings.timeoutMs;
+  }
+
+  function clampInt(value, min, max, fallback) {
+    var n = parseInt(value, 10);
+    if (isNaN(n)) return fallback;
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function prettyJson(value) {
+    try {
+      return JSON.stringify(value, null, 2);
+    } catch (e) {
+      return String(value);
+    }
+  }
+
+  function runDiagnostics() {
+    openModal('diag');
+    $('diagModalOut').textContent = t('diag.running');
+
+    Luna.request('diagnostics').then(function (report) {
+      var text = prettyJson(report);
+      $('diagModalOut').textContent = text;
+      $('diagOut').textContent = text;
+
+      if (!report.udp || !report.udp.ok) {
+        setStatusLine(t('toast.noBridge'));
+      } else {
+        setStatusLine(t('status.ready'));
+      }
+    }).catch(function (err) {
+      var message = prettyJson({ returnValue: false, error: err && err.message ? err.message : String(err) });
+      $('diagModalOut').textContent = message;
+      $('diagOut').textContent = message;
+    });
+  }
+
+  /* ------------------------------------------------------------------ modal */
+
+  function shellVisible(id, visible) {
+    var node = $(id);
+    if (!node) return;
+    if (visible) node.classList.remove('hidden');
+    else node.classList.add('hidden');
+  }
+
+  function openModal(kind, payload) {
+    modal.open = true;
+    modal.kind = kind;
+    modal.payload = payload || {};
+
+    ['paneForm', 'paneMacPad', 'paneDiag', 'paneBackup', 'paneConfirm'].forEach(function (id) {
+      shellVisible(id, false);
+    });
+
+    var title = '';
+    var showCancel = true;
+    var showPrimary = false;
+    var showConfirm = false;
+    var primaryLabel = t('action.save');
+    var cancelLabel = t('action.cancel');
+
+    if (kind === 'form') {
+      var device = modal.payload.device;
+      title = device ? t('form.editTitle') : t('form.addTitle');
+      fillForm(device, modal.payload.prefill);
+      shellVisible('paneForm', true);
+      showPrimary = true;
+      primaryLabel = t('action.save');
+      modal.pane = 'form';
+    } else if (kind === 'diag') {
+      title = t('diag.title');
+      shellVisible('paneDiag', true);
+      showCancel = true;
+      cancelLabel = t('action.close');
+      modal.pane = 'diag';
+    } else if (kind === 'backup-export') {
+      title = t('backup.exportTitle');
+      shellVisible('paneBackup', true);
+      $('backupHint').textContent = t('backup.exportHint');
+      $('backupText').value = modal.payload.text || '';
+      $('backupText').readOnly = true;
+      cancelLabel = t('action.close');
+      modal.pane = 'backup';
+    } else if (kind === 'backup-import') {
+      title = t('backup.importTitle');
+      shellVisible('paneBackup', true);
+      $('backupHint').textContent = t('backup.importHint');
+      $('backupText').value = '';
+      $('backupText').readOnly = false;
+      showPrimary = true;
+      primaryLabel = t('action.applyRestore');
+      modal.pane = 'backup';
+    } else if (kind === 'confirm') {
+      title = modal.payload.title || '';
+      shellVisible('paneConfirm', true);
+      $('confirmText').textContent = modal.payload.body || '';
+      showConfirm = true;
+      modal.pane = 'confirm';
+    }
+
+    $('modalTitle').textContent = title;
+    $('btnCancel').textContent = cancelLabel;
+    shellVisible('btnCancel', showCancel);
+    shellVisible('btnPrimary', showPrimary);
+    shellVisible('btnConfirmYes', showConfirm);
+    $('btnPrimary').textContent = primaryLabel;
+
+    $('modalRoot').classList.remove('hidden');
+
+    // Land the cursor on the control the user most likely wants, not merely on
+    // the first one in document order (which is the Close button).
+    var initial = null;
+    if (kind === 'form') initial = $('fName');
+    else if (kind === 'backup-import') initial = $('backupText');
+    else if (kind === 'confirm') initial = $('btnConfirmYes');
+    else if (kind === 'backup-export') initial = $('backupText');
+    else initial = $('btnCancel');
+
+    Nav.pushScope($('modalBox'), { onBack: handleModalBack, initial: initial });
+  }
+
+  function handleModalBack() {
+    if (modal.pane === 'macpad') {
+      showFormPane();
+      return;
+    }
+    closeModal();
+  }
+
+  function closeModal() {
+    $('modalRoot').classList.add('hidden');
+    modal.open = false;
+    modal.kind = null;
+    modal.pane = null;
+    modal.payload = null;
+    Nav.popScope();
+    Nav.refresh();
+  }
+
+  function formTitle() {
+    return modal.payload && modal.payload.device ? t('form.editTitle') : t('form.addTitle');
+  }
+
+  function showMacPad() {
+    modal.pane = 'macpad';
+    shellVisible('paneForm', false);
+    shellVisible('paneMacPad', true);
+    $('modalTitle').textContent = t('macpad.title');
+    renderMacPad();
+    Nav.refresh();
+    var first = $('macpadGrid').querySelector('[data-nav]');
+    if (first) Nav.focus(first);
+  }
+
+  function showFormPane() {
+    modal.pane = 'form';
+    shellVisible('paneMacPad', false);
+    shellVisible('paneForm', true);
+    $('modalTitle').textContent = formTitle();
+    $('fMac').value = formatMac(state.macDraft || '');
+    updateMacHint();
+    Nav.refresh($('fMac'));
+  }
+
+  function renderMacPad() {
+    var digits = '0123456789ABCDEF'.split('');
+    var html = '';
+    digits.forEach(function (digit) {
+      html += '<button type="button" data-nav data-digit="' + digit + '">' + digit + '</button>';
+    });
+    $('macpadGrid').innerHTML = html;
+    updateMacPadDisplay();
+  }
+
+  function updateMacPadDisplay() {
+    var draft = state.macDraft || '';
+    var display = $('macpadDisplay');
+    display.textContent = formatMacDraft(draft);
+    if (draft.length === 12) display.classList.remove('incomplete');
+    else display.classList.add('incomplete');
+
+    $('macpadDone').disabled = draft.length !== 12;
+  }
+
+  function formatMac(hex) {
+    var clean = String(hex || '').replace(/[^0-9a-fA-F]/g, '').toUpperCase().substr(0, 12);
+    var groups = [];
+    for (var i = 0; i < clean.length; i += 2) groups.push(clean.substr(i, 2));
+    return groups.join(':');
+  }
+
+  function formatMacDraft(hex) {
+    var groups = [];
+    for (var i = 0; i < 6; i++) {
+      var pair = String(hex || '').substr(i * 2, 2);
+      groups.push(pair.length === 2 ? pair : (pair + '--').substr(0, 2));
+    }
+    return groups.join(':');
+  }
+
+  function updateMacHint() {
+    var value = $('fMac').value;
+    var normalized = Store.normalizeMac(value);
+    if (!normalized) {
+      $('macVendorHint').textContent = t('hint.mac');
+      return;
+    }
+    var vendor = global.OUI.vendorFor(normalized);
+    if (vendor) $('macVendorHint').textContent = t('label.vendor') + ': ' + vendor;
+    else if (global.OUI.isRandomised(normalized)) $('macVendorHint').textContent = t('vendor.unknown');
+    else $('macVendorHint').textContent = normalized;
+  }
+
+  /* ------------------------------------------------------------- device form */
+
+  function fillForm(device, prefill) {
+    var source = device || prefill || {};
+    $('fName').value = source.name || '';
+    $('fMac').value = source.mac || '';
+    $('fIp').value = source.ip || '';
+    $('fPort').value = source.port || '';
+    $('fBroadcast').value = source.broadcast || '';
+    $('fWakeOn').value = source.wakeOn || '';
+    $('formError').classList.add('hidden');
+    state.macDraft = String(source.mac || '').replace(/[^0-9a-fA-F]/g, '').toUpperCase().substr(0, 12);
+    updateMacHint();
+  }
+
+  function validateAndSave() {
+    var editing = modal.payload && modal.payload.device;
+
+    // The keypad is just a second way to fill the MAC field. If Save is pressed
+    // while it is open, keep the digits rather than silently dropping them.
+    if (modal.pane === 'macpad') {
+      $('fMac').value = formatMac(state.macDraft || '');
+    }
+
+    var draft = {
+      name: $('fName').value,
+      mac: $('fMac').value,
+      ip: $('fIp').value.trim(),
+      port: $('fPort').value,
+      broadcast: $('fBroadcast').value.trim(),
+      wakeOn: $('fWakeOn').value
+    };
+
+    var errors = Store.devices.validate(draft);
+    var firstError = errors.name || errors.mac || errors.ip || errors.port || errors.broadcast;
+
+    if (firstError) {
+      var box = $('formError');
+      box.textContent = t(firstError);
+      box.classList.remove('hidden');
+      return;
+    }
+
+    var saved = editing
+      ? Store.devices.update(editing.id, draft)
+      : Store.devices.add(draft);
+
+    if (saved && !editing) state.status[saved.id] = 'unknown';
+
+    closeModal();
+    renderDevices();
+    refreshDeviceFocus(saved ? saved.id : null);
+    toast(t('toast.deviceSaved'), 'ok');
+  }
+
+  // Re-rendering the grid destroys the focused button, so after a list change
+  // the cursor is placed back on the same device's Wake button - the control the
+  // user was most likely aiming at - or on Add device if that device is gone.
+  function refreshDeviceFocus(deviceId) {
+    var target = null;
+
+    if (deviceId) {
+      target = document.querySelector('[data-action="wake"][data-id="' + deviceId + '"]');
+    }
+
+    Nav.refresh(target || $('btnAdd'));
+  }
+
+  function confirmDelete(device) {
+    openModal('confirm', {
+      title: t('confirm.deleteTitle'),
+      body: t('confirm.deleteBody', { name: device.name }),
+      onYes: function () {
+        Store.devices.remove(device.id);
+        delete state.status[device.id];
+        closeModal();
+        renderDevices();
+        refreshDeviceFocus(null);
+        toast(t('toast.deviceDeleted'), 'ok');
+      }
+    });
+  }
+
+  function confirmResetSettings() {
+    openModal('confirm', {
+      title: t('confirm.resetTitle'),
+      body: t('confirm.resetBody'),
+      onYes: function () {
+        state.settings = Store.settings.reset();
+        var language = detectLanguage();
+        state.settings = Store.settings.save({ language: language });
+        applyLanguage(language);
+        renderSettings();
+        closeModal();
+        toast(t('toast.settingsReset'), 'ok');
+      }
+    });
+  }
+
+  function openAddForm(prefill) {
+    var suggestion = prefill && prefill.mac ? global.OUI.suggestName(prefill.mac, Store.devices.list().length + 1) : null;
+    openModal('form', {
+      device: null,
+      prefill: {
+        name: (prefill && prefill.name) || suggestion || '',
+        mac: prefill && prefill.mac ? prefill.mac : '',
+        ip: prefill && prefill.ip ? prefill.ip : ''
+      }
+    });
+  }
+
+  function doExport() {
+    Luna.request('backupWrite', { data: Store.backup.exportJson() }).then(function (result) {
+      state.backupPath = result.path || '';
+      openModal('backup-export', { text: Store.backup.exportJson() });
+      $('backupPath').textContent = state.backupPath;
+      setStatusLine(state.backupPath);
+    }).catch(function (err) {
+      toast(t('backup.writeFailed', { error: err && err.message ? err.message : err }), 'err');
+    });
+  }
+
+  // Restoring on a TV is otherwise awkward: the user cannot browse the file
+  // system with a remote. So the backup file is read from the TV first and
+  // dropped into the box, leaving pasting as a fallback rather than the only way.
+  function openImport() {
+    openModal('backup-import');
+
+    Luna.request('backupRead').then(function (result) {
+      $('backupText').value = result.data || '';
+      state.backupPath = result.path || state.backupPath;
+      $('backupPath').textContent = state.backupPath;
+    }).catch(function () {
+      $('backupText').value = '';
+    });
+  }
+
+  function doImport() {
+    var text = $('backupText').value;
+    var result = Store.backup.importJson(text);
+    if (!result.ok) {
+      toast(t(result.error), 'err');
+      return;
+    }
+    closeModal();
+    renderDevices();
+    refreshDeviceFocus(null);
+    toast(t('backup.restored', { count: result.count }), 'ok');
+  }
+
+  /* ---------------------------------------------------------------- events */
+
+  function bindEvents() {
+    $('tabs').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-tab')) {
+          showView(node.getAttribute('data-tab'));
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    $('btnAdd').addEventListener('click', function () { openAddForm(null); });
+    $('btnEmptyAdd').addEventListener('click', function () { openAddForm(null); });
+    $('btnEmptyDiscover').addEventListener('click', function () { showView('discover'); });
+    $('btnWakeAll').addEventListener('click', wakeAll);
+    $('btnRefresh').addEventListener('click', refreshAllStatuses);
+
+    $('autoProbe').addEventListener('change', function () {
+      state.settings = Store.settings.save({ autoProbe: $('autoProbe').checked });
+    });
+
+    // Device card actions.
+    $('deviceGrid').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-action')) {
+          var id = node.getAttribute('data-id');
+          var device = Store.devices.get(id);
+          if (!device) return;
+          var action = node.getAttribute('data-action');
+          if (action === 'wake') wakeDevice(device);
+          else if (action === 'probe') probeDevice(device);
+          else if (action === 'edit') openModal('form', { device: device });
+          else if (action === 'delete') confirmDelete(device);
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    $('btnScan').addEventListener('click', startScan);
+    $('btnScanStop').addEventListener('click', stopScan);
+    $('btnArp').addEventListener('click', function () {
+      loadArp().then(function (entries) {
+        if (entries.length) toast(t('toast.arpFound', { count: entries.length }), 'ok');
+        else toast(t('toast.arpNone'), 'err');
+      });
+    });
+
+    $('hostTableBody').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-addhost')) {
+          openAddForm({ ip: node.getAttribute('data-addhost'), mac: node.getAttribute('data-mac') });
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    $('arpChips').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-arp')) {
+          openAddForm({ ip: node.getAttribute('data-arp'), mac: node.getAttribute('data-mac') });
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    $('langRow').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-lang')) {
+          var code = node.getAttribute('data-lang');
+          state.settings = Store.settings.save({ language: code });
+          applyLanguage(code);
+          Nav.refresh();
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    ['setPort', 'setRepeat', 'setInterval', 'setTimeout', 'setBroadcast'].forEach(function (id) {
+      $(id).addEventListener('change', commitSettings);
+      $(id).addEventListener('keydown', function (event) {
+        var code = event.keyCode || event.which;
+        if (code === 13) {
+          event.preventDefault();
+          commitSettings();
+        }
+      });
+    });
+
+    $('btnDiag').addEventListener('click', runDiagnostics);
+    $('btnExport').addEventListener('click', function () {
+      commitSettings();
+      doExport();
+    });
+    $('btnImport').addEventListener('click', openImport);
+    $('btnReset').addEventListener('click', confirmResetSettings);
+
+    $('modalClose').addEventListener('click', closeModal);
+    $('btnCancel').addEventListener('click', closeModal);
+    $('btnPrimary').addEventListener('click', function () {
+      if (modal.kind === 'form') validateAndSave();
+      else if (modal.kind === 'backup-import') doImport();
+    });
+    $('btnConfirmYes').addEventListener('click', function () {
+      if (modal.payload && typeof modal.payload.onYes === 'function') modal.payload.onYes();
+    });
+
+    $('btnMacPad').addEventListener('click', showMacPad);
+
+    $('macpadGrid').addEventListener('click', function (event) {
+      var node = event.target;
+      while (node && node.nodeType === 1) {
+        if (node.hasAttribute && node.hasAttribute('data-digit')) {
+          if (!state.macDraft) state.macDraft = '';
+          if (state.macDraft.length < 12) state.macDraft += node.getAttribute('data-digit');
+          updateMacPadDisplay();
+          return;
+        }
+        node = node.parentNode;
+      }
+    });
+
+    $('macpadBackspace').addEventListener('click', function () {
+      state.macDraft = String(state.macDraft || '').slice(0, -1);
+      updateMacPadDisplay();
+    });
+
+    $('macpadClear').addEventListener('click', function () {
+      state.macDraft = '';
+      updateMacPadDisplay();
+    });
+
+    $('macpadDone').addEventListener('click', function () {
+      if (String(state.macDraft || '').length !== 12) return;
+      showFormPane();
+    });
+
+    $('fMac').addEventListener('input', function () {
+      state.macDraft = String($('fMac').value || '').replace(/[^0-9a-fA-F]/g, '').toUpperCase().substr(0, 12);
+      updateMacHint();
+    });
+
+    // Commit pending text edits before leaving a screen that reads them.
+    $('tabs').addEventListener('click', function () {
+      if (state.view === 'settings') commitSettings();
+    }, true);
+  }
+
+  /* ------------------------------------------------------------- bootstrap */
+
+  function loadMeta() {
+    $('aboutVersion').textContent = state.version;
+    $('aboutService').textContent = Luna.serviceName;
+    $('aboutBridge').textContent = Luna.mode();
+
+    if (!Luna.isLive()) {
+      $('demoBanner').classList.remove('hidden');
+    }
+
+    // appinfo.json is readable from the app package on most firmwares; if it is
+    // not, the constant above stands in.
+    try {
+      var request = new XMLHttpRequest();
+      request.open('GET', 'appinfo.json', true);
+      request.onreadystatechange = function () {
+        if (request.readyState !== 4) return;
+        if (request.status !== 200 && request.status !== 0) return;
+        try {
+          var info = JSON.parse(request.responseText);
+          if (info && info.version) {
+            state.version = info.version;
+            $('aboutVersion').textContent = info.version;
+          }
+        } catch (e) { /* keep the constant */ }
+      };
+      request.send();
+    } catch (e) { /* keep the constant */ }
+  }
+
+  function init() {
+    state.settings = Store.settings.get();
+    state.version = TARGET_VERSION;
+
+    var language = state.settings.language || detectLanguage();
+    I18N.set(language);
+
+    renderLanguageOptions();
+    renderSettings();
+    renderDevices();
+    renderInterfaces();
+    loadMeta();
+
+    bindEvents();
+    Nav.init({ onBack: function () { Nav.exitApp(); } });
+    showView('devices');
+
+    // Warm up the interface list so the network badge is populated on screen
+    // one, and keep the ARP cache ready for the Discover tab.
+    Luna.request('network').then(function (result) {
+      state.interfaces = result.interfaces || [];
+      state.broadcasts = result.broadcasts || [];
+      updateNetworkBadge();
+      renderInterfaces();
+    }).catch(function () {
+      updateNetworkBadge();
+    });
+
+    loadArp();
+    setStatusLine(t('status.ready'));
+  }
+
+  I18N.onChange(function () {
+    // Text direction and every static label are handled by I18N.set; the
+    // generated parts of the interface have to be rebuilt.
+    renderLanguageOptions();
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+}(window));

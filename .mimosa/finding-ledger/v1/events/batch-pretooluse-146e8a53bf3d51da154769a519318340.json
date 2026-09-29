@@ -1,0 +1,72 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "pretooluse-146e8a53bf3d51da154769a519318340",
+  "runId": null,
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "PreToolUse"
+  },
+  "revision": null,
+  "diffHash": null,
+  "rulesVersion": null,
+  "sessionHash": "cc89ffd1b2f175d44e7243957be87a45a2687f2d8a202a9c39a6f9827df9c3da",
+  "reportRef": null,
+  "events": [
+    {
+      "eventId": "hook-b09f78e8f17515efcbd4d0b587ee469c",
+      "findingId": "mimosa-19aab45f87bbc869efd517df",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:45.982Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 105,
+      "endLine": 105,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba"
+      },
+      "sequence": 0
+    },
+    {
+      "eventId": "hook-76fabb53e6e74e7418f5a5ef5715e74f",
+      "findingId": "mimosa-0cf7168f5273f7edd9594101",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:45.982Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "39e76e3be5f732ed9d1e66ddc1980f6d5c1763129ca08fc57c25c790b11d1f46",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 109,
+      "endLine": 109,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "39e76e3be5f732ed9d1e66ddc1980f6d5c1763129ca08fc57c25c790b11d1f46"
+      },
+      "sequence": 1
+    }
+  ],
+  "observedFindingIds": [],
+  "verifiedFiles": [],
+  "recordedAt": "2026-09-28T18:48:46.454Z"
+}

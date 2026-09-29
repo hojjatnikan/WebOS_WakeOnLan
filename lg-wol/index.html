@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wake On LAN</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">
+        <strong data-i18n="app.title">Wake On LAN</strong>
+        <em data-i18n="app.tagline">Wake sleeping computers on your network from your TV</em>
+      </span>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab" data-nav data-tab="devices" data-i18n="tab.devices">Devices</button>
+      <button type="button" class="tab" data-nav data-tab="discover" data-i18n="tab.discover">Discover</button>
+      <button type="button" class="tab" data-nav data-tab="settings" data-i18n="tab.settings">Settings</button>
+    </nav>
+
+    <div class="netbadge" id="netBadge">
+      <span class="dot"></span>
+      <span id="netBadgeText">—</span>
+    </div>
+  </header>
+
+  <div class="banner hidden" id="demoBanner">
+    <strong data-i18n="banner.demoTitle">Demo mode</strong>
+    <span data-i18n="banner.demoBody">The webOS bridge was not found, so calls are simulated. Install on a TV to send real packets.</span>
+  </div>
+
+  <main id="views">
+
+    <!-- ---------------------------------------------------------- Devices -->
+    <section class="view" id="view-devices">
+      <div class="toolbar">
+        <button type="button" class="btn primary" data-nav id="btnAdd" data-i18n="action.add">Add device</button>
+        <button type="button" class="btn" data-nav id="btnWakeAll" data-i18n="action.wakeAll">Wake all</button>
+        <button type="button" class="btn" data-nav id="btnRefresh" data-i18n="action.refresh">Check status</button>
+        <label class="switch" data-nav>
+          <input type="checkbox" id="autoProbe">
+          <span data-i18n="action.autoProbe">Auto check</span>
+        </label>
+        <span class="toolbar-spacer"></span>
+        <span class="counter" id="deviceCounter"></span>
+      </div>
+
+      <div class="grid" id="deviceGrid"></div>
+
+      <div class="empty hidden" id="devicesEmpty">
+        <div class="empty-icon" aria-hidden="true"></div>
+        <h2 data-i18n="empty.devicesTitle">No devices yet</h2>
+        <p data-i18n="empty.devicesBody">Add one manually, or open Discover and pick a computer that is already awake.</p>
+        <div class="empty-actions">
+          <button type="button" class="btn primary" data-nav id="btnEmptyAdd" data-i18n="action.add">Add device</button>
+          <button type="button" class="btn" data-nav id="btnEmptyDiscover" data-i18n="tab.discover">Discover</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------- Discover -->
+    <section class="view hidden" id="view-discover">
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-i18n="discover.interfacesTitle">This TV's network</h2>
+        </div>
+        <div class="iface-list" id="ifaceList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-i18n="discover.hostsTitle">Devices found on the network</h2>
+          <div class="panel-actions">
+            <button type="button" class="btn" data-nav id="btnScan" data-i18n="action.scan">Scan network</button>
+            <button type="button" class="btn danger hidden" data-nav id="btnScanStop" data-i18n="action.stop">Stop</button>
+          </div>
+        </div>
+
+        <div class="scanbar hidden" id="scanBar">
+          <div class="progress"><div class="progress-fill" id="scanProgress"></div></div>
+          <span class="scan-label" id="scanLabel"></span>
+        </div>
+
+        <p class="hint" data-i18n="discover.hint">Only devices that are currently awake answer a scan. To find the address of a sleeping computer, look it up in your router's client list, or check the ARP table below.</p>
+
+        <div class="table-wrap">
+          <table class="data-table" id="hostTable">
+            <thead>
+              <tr>
+                <th data-i18n="label.ip">IP address</th>
+                <th data-i18n="label.mac">MAC address</th>
+                <th data-i18n="label.openPorts">Open ports</th>
+                <th data-i18n="label.source">Source</th>
+                <th class="col-action"></th>
+              </tr>
+            </thead>
+            <tbody id="hostTableBody"></tbody>
+          </table>
+          <div class="empty small hidden" id="hostsEmpty">
+            <p data-i18n="discover.noHosts">Nothing found yet. Press “Scan network”.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2 data-i18n="discover.arpTitle">ARP cache (known addresses)</h2>
+          <div class="panel-actions">
+            <button type="button" class="btn" data-nav id="btnArp" data-i18n="action.refreshArp">Refresh</button>
+          </div>
+        </div>
+        <p class="hint" data-i18n="discover.arpHint">The kernel ARP cache often contains the MAC of devices that are asleep right now — exactly what you need to wake them.</p>
+        <div class="chip-row" id="arpChips"></div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------- Settings -->
+    <section class="view hidden" id="view-settings">
+      <div class="cols">
+
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="settings.language">Language</h2></div>
+          <div class="option-row" id="langRow"></div>
+          <p class="hint" data-i18n="settings.languageHint">The interface language and text direction follow this setting.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="settings.packetTitle">Magic packet</h2></div>
+
+          <div class="field">
+            <label for="setPort" data-i18n="settings.defaultPort">Default UDP port</label>
+            <input type="text" id="setPort" inputmode="numeric" value="9">
+            <span class="sub" data-i18n="settings.defaultPortHint">9 is the standard. A few machines listen on 7 instead.</span>
+          </div>
+
+          <div class="field">
+            <label for="setRepeat" data-i18n="settings.repeat">Packets per target</label>
+            <input type="text" id="setRepeat" inputmode="numeric" value="3">
+            <span class="sub" data-i18n="settings.repeatHint">UDP is lossy and the first datagram is often dropped. 3 is a good default.</span>
+          </div>
+
+          <div class="field">
+            <label for="setInterval" data-i18n="settings.interval">Gap between packets (ms)</label>
+            <input type="text" id="setInterval" inputmode="numeric" value="120">
+          </div>
+
+          <div class="field">
+            <label for="setTimeout" data-i18n="settings.timeout">Reachability timeout (ms)</label>
+            <input type="text" id="setTimeout" inputmode="numeric" value="400">
+            <span class="sub" data-i18n="settings.timeoutHint">How long each status probe waits for an answer.</span>
+          </div>
+
+          <div class="field">
+            <label for="setBroadcast" data-i18n="settings.forceBroadcast">Extra broadcast address</label>
+            <input type="text" id="setBroadcast" placeholder="192.168.1.255">
+            <span class="sub" data-i18n="settings.forceBroadcastHint">Optional. Leave empty to use the address detected from this TV's network only.</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="settings.diagnostics">Diagnostics</h2>
+            <div class="panel-actions">
+              <button type="button" class="btn" data-nav id="btnDiag" data-i18n="action.runDiagnostics">Run test</button>
+            </div>
+          </div>
+          <p class="hint" data-i18n="settings.diagnosticsHint">Sends one real packet to your network and reports what this TV's firmware allows. Run it first if waking does not work.</p>
+          <pre class="diag-out" id="diagOut" data-i18n="diag.idle">Not run yet.</pre>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2 data-i18n="settings.storage">Backup</h2>
+          </div>
+          <p class="hint" data-i18n="settings.storageHint">Device lists live in this app's local storage and survive updates. A backup writes the same data to a file on the TV so it can be moved to another one.</p>
+          <div class="row">
+            <button type="button" class="btn" data-nav id="btnExport" data-i18n="action.export">Write backup</button>
+            <button type="button" class="btn" data-nav id="btnImport" data-i18n="action.import">Restore</button>
+            <button type="button" class="btn danger" data-nav id="btnReset" data-i18n="action.resetSettings">Reset settings</button>
+          </div>
+          <p class="sub" id="backupPath"></p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2 data-i18n="settings.about">About</h2></div>
+          <p class="about-text" data-i18n="about.body">Wake On LAN sends a magic packet over your local network to switch on a sleeping computer, NAS or media player. The packet is a broadcast containing the target's MAC address; nothing leaves your home network and no internet connection or account is required.</p>
+          <ul class="plain-list">
+            <li><span data-i18n="about.version">Version</span><span id="aboutVersion">—</span></li>
+            <li><span data-i18n="about.service">Backend service</span><span id="aboutService">—</span></li>
+            <li><span data-i18n="about.bridge">luna bridge</span><span id="aboutBridge">—</span></li>
+          </ul>
+          <p class="hint" data-i18n="about.tvLimit">A TV cannot wake itself: a powered-off TV runs no code, and this app always runs on the TV. Use it to wake your other machines.</p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="statusbar">
+    <span id="statusText" data-i18n="status.ready">Ready</span>
+    <span class="spacer"></span>
+    <span class="keyhint" data-i18n="nav.hint">Arrows to move · Enter to select · Back to return</span>
+  </footer>
+
+</div>
+
+<!-- ================================================== device editor modal -->
+<div class="modal-root hidden" id="modalRoot">
+  <div class="modal" id="modalBox" role="dialog" aria-modal="true">
+
+    <div class="modal-head">
+      <h2 id="modalTitle">—</h2>
+      <button type="button" class="btn ghost" data-nav id="modalClose" data-i18n="action.close">Close</button>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- device form -->
+      <div id="paneForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="fName" data-i18n="label.name">Name</label>
+            <input type="text" id="fName" placeholder="Living room PC" data-nav>
+            <span class="sub" data-i18n="hint.name">Anything you will recognise in the list.</span>
+          </div>
+
+          <div class="field">
+            <label for="fMac" data-i18n="label.mac">MAC address</label>
+            <div class="input-with-btn">
+              <input type="text" id="fMac" placeholder="1A:2B:3C:4D:5E:6F" data-nav autocomplete="off" spellcheck="false">
+              <button type="button" class="btn" data-nav id="btnMacPad" data-i18n="action.keypad">Keypad</button>
+            </div>
+            <span class="sub" id="macVendorHint" data-i18n="hint.mac">Format: 1A:2B:3C:4D:5E:6F</span>
+          </div>
+
+          <div class="field">
+            <label for="fIp" data-i18n="label.ip">IP address</label>
+            <input type="text" id="fIp" placeholder="192.168.1.50" data-nav autocomplete="off" spellcheck="false">
+            <span class="sub" data-i18n="hint.ip">Optional. It is used for an extra unicast packet and for status checks.</span>
+          </div>
+
+          <div class="field">
+            <label for="fPort" data-i18n="label.port">UDP port</label>
+            <input type="text" id="fPort" inputmode="numeric" placeholder="9" data-nav>
+          </div>
+
+          <div class="field">
+            <label for="fBroadcast" data-i18n="label.broadcast">Broadcast address</label>
+            <input type="text" id="fBroadcast" placeholder="192.168.1.255" data-nav autocomplete="off" spellcheck="false">
+            <span class="sub" data-i18n="hint.broadcast">Optional. Use it when the router blocks 255.255.255.255.</span>
+          </div>
+
+          <div class="field">
+            <label for="fWakeOn" data-i18n="label.wakeOn">Wake-on setting</label>
+            <input type="text" id="fWakeOn" placeholder="BIOS / NIC setting" data-nav>
+            <span class="sub" data-i18n="hint.wakeOn">A reminder for yourself, e.g. “enable WOL in BIOS first”.</span>
+          </div>
+        </div>
+
+        <p class="form-error hidden" id="formError"></p>
+      </div>
+
+      <!-- MAC keypad -->
+      <div id="paneMacPad" class="hidden">
+        <p class="hint" data-i18n="macpad.hint">A TV remote is a poor keyboard. Pick one hexadecimal digit at a time, or use the field above with the on-screen keyboard.</p>
+        <div class="macpad-display" id="macpadDisplay">--:--:--:--:--:--</div>
+        <div class="macpad" id="macpadGrid"></div>
+        <div class="row">
+          <button type="button" class="btn" data-nav id="macpadBackspace" data-i18n="macpad.backspace">Delete</button>
+          <button type="button" class="btn" data-nav id="macpadClear" data-i18n="macpad.clear">Clear</button>
+          <button type="button" class="btn primary" data-nav id="macpadDone" data-i18n="macpad.done">Use this address</button>
+        </div>
+      </div>
+
+      <!-- diagnostics pane -->
+      <div id="paneDiag" class="hidden">
+        <pre class="diag-out large" id="diagModalOut">—</pre>
+      </div>
+
+      <!-- backup pane -->
+      <div id="paneBackup" class="hidden">
+        <p class="hint" id="backupHint"></p>
+        <textarea id="backupText" spellcheck="false" data-nav></textarea>
+      </div>
+
+      <!-- confirm pane -->
+      <div id="paneConfirm" class="hidden">
+        <p class="confirm-text" id="confirmText"></p>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="btn" data-nav id="btnCancel" data-i18n="action.cancel">Cancel</button>
+      <button type="button" class="btn primary hidden" data-nav id="btnPrimary" data-i18n="action.save">Save</button>
+      <button type="button" class="btn danger hidden" data-nav id="btnConfirmYes" data-i18n="action.confirm">Confirm</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-root" id="toastRoot"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/oui.js"></script>
+<script src="js/luna.js"></script>
+<script src="js/store.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

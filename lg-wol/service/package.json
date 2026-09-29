@@ -1,0 +1,8 @@
+{
+  "name": "com.zcode.wol.service",
+  "version": "1.0.0",
+  "description": "Wake On LAN magic packet sender and LAN discovery helper",
+  "main": "service.js",
+  "author": "ZCode",
+  "license": "MIT"
+}

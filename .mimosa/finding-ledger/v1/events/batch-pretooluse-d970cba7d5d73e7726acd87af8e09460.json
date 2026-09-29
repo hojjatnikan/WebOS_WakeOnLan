@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "pretooluse-d970cba7d5d73e7726acd87af8e09460",
+  "runId": null,
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "PreToolUse"
+  },
+  "revision": null,
+  "diffHash": null,
+  "rulesVersion": null,
+  "sessionHash": "cc89ffd1b2f175d44e7243957be87a45a2687f2d8a202a9c39a6f9827df9c3da",
+  "reportRef": null,
+  "events": [
+    {
+      "eventId": "hook-e97a31d348acf383b5b81694f4aa2522",
+      "findingId": "mimosa-9b1686e300b4a5ec609ce831",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:13.407Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 201,
+      "endLine": 201,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416"
+      },
+      "sequence": 0
+    }
+  ],
+  "observedFindingIds": [],
+  "verifiedFiles": [],
+  "recordedAt": "2026-09-28T18:45:13.857Z"
+}

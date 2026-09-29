@@ -1,0 +1,871 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260928T185554644Z-166760-feb0b4be5f5e",
+  "runId": "20260928T185554644Z-166760-feb0b4be5f5e",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": null,
+  "diffHash": "5065935e8aa8860d5b9d2202864473a6b79af27771c1eb7deebefae3ca459c9b",
+  "rulesVersion": "unavailable",
+  "sessionHash": "cc89ffd1b2f175d44e7243957be87a45a2687f2d8a202a9c39a6f9827df9c3da",
+  "reportRef": ".mimosa/reports/task-review-sess_dd69f8d3-a91a-4073-8857-70eb2292bc61-20260928T185554644Z-166760-feb0b4be5f5e.json",
+  "events": [
+    {
+      "eventId": "hook-3f991be80d20f1c9096c051a64952312",
+      "findingId": "mimosa-8e99b55863c91d6941e4c9ac",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:44:27.789Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 263,
+      "endLine": 263,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f"
+      },
+      "sequence": 0
+    },
+    {
+      "eventId": "hook-c7490a394caaf28b62e048332951dad2",
+      "findingId": "mimosa-8e99b55863c91d6941e4c9ac",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:44:55.594Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 263,
+      "endLine": 263,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "ea820d319b60b6057a25ba7584b350a9c629eb77afa1f07a9d0383bc1311b17f"
+      },
+      "sequence": 1
+    },
+    {
+      "eventId": "hook-e97a31d348acf383b5b81694f4aa2522",
+      "findingId": "mimosa-9b1686e300b4a5ec609ce831",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:13.407Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 201,
+      "endLine": 201,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416"
+      },
+      "sequence": 2
+    },
+    {
+      "eventId": "hook-45a6d63eda4cebeabf8a71650fcd2ceb",
+      "findingId": "mimosa-9b1686e300b4a5ec609ce831",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:36.979Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 225,
+      "endLine": 225,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1cb863d0c02a04bae1397c6d83f96fd72a3762c620edae73792da35341f41416"
+      },
+      "sequence": 3
+    },
+    {
+      "eventId": "hook-6f984b029476d9a5091cd8ba17e694a3",
+      "findingId": "mimosa-e2acfdaf96e08951e56aeda4",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:59.691Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "47a26b12776fcd88de1d03735da16cb5b3fa64bb6485af9ffbfd6fcf86594fb3",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 189,
+      "endLine": 189,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "47a26b12776fcd88de1d03735da16cb5b3fa64bb6485af9ffbfd6fcf86594fb3"
+      },
+      "sequence": 4
+    },
+    {
+      "eventId": "hook-487e857959acfee5de7fb9ef926a86ac",
+      "findingId": "mimosa-4cc948a94cd90072eb04a897",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:59.691Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "1b4cd6389c9b2453a1c6c19a4e41bfd89adec3975a348c5cf229ac058de41928",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 193,
+      "endLine": 193,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1b4cd6389c9b2453a1c6c19a4e41bfd89adec3975a348c5cf229ac058de41928"
+      },
+      "sequence": 5
+    },
+    {
+      "eventId": "hook-d2fbd6876534d1d2845f397d074ccd90",
+      "findingId": "mimosa-27f9204672c0f2c02078a6e1",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:45:59.691Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "df078283f5f19b24e457976784039f8f1a8e68f7ea6dcb6b5c52b05bd39df721",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 197,
+      "endLine": 197,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "df078283f5f19b24e457976784039f8f1a8e68f7ea6dcb6b5c52b05bd39df721"
+      },
+      "sequence": 6
+    },
+    {
+      "eventId": "hook-474a682232eb1b4908866bd72bca3b36",
+      "findingId": "mimosa-ba2e4c786c59c09163e834c3",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:46:36.931Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "1a2363537a9841c2eeef6ec777e3fef063dbdd4a5127ece19066d5c9498c6393",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 184,
+      "endLine": 184,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1a2363537a9841c2eeef6ec777e3fef063dbdd4a5127ece19066d5c9498c6393"
+      },
+      "sequence": 7
+    },
+    {
+      "eventId": "hook-97b6891939e56928fb807dfe892051fe",
+      "findingId": "mimosa-5c30eb01675d92de17f11423",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:46:36.931Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "6a0803ddcf1d0e3c2f12861397ba005db2316b11890340a696069c3f03b6dca2",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 188,
+      "endLine": 188,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "6a0803ddcf1d0e3c2f12861397ba005db2316b11890340a696069c3f03b6dca2"
+      },
+      "sequence": 8
+    },
+    {
+      "eventId": "hook-4467370671999f7805ffd4f8aa4e656f",
+      "findingId": "mimosa-afccd8eed583852b54c0a019",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:46:36.931Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/make-icons.py",
+        "ruleId": "security",
+        "codeEvidenceHash": "63bd94da750cfb96a6a173b6123cb246114d381b8b36b994236127165846416c",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 192,
+      "endLine": 192,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "63bd94da750cfb96a6a173b6123cb246114d381b8b36b994236127165846416c"
+      },
+      "sequence": 9
+    },
+    {
+      "eventId": "hook-151c88da0d648a4adae432983deed5f7",
+      "findingId": "mimosa-f472d43d9760c7ca99289fa7",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.258Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "346309f483f2916c2a6db59c12a9e3c2e16a14a5fd1de63399f4ab094ce1cd68",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 51,
+      "endLine": 51,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "346309f483f2916c2a6db59c12a9e3c2e16a14a5fd1de63399f4ab094ce1cd68"
+      },
+      "sequence": 10
+    },
+    {
+      "eventId": "hook-014d876279ad1044af03017d7d3519ff",
+      "findingId": "mimosa-f7b73a902860c041ff348a65",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.258Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "1efeb75d4c2f0099535adb2310377af249cd83c7dd0d157d562b7c8cd65c728d",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 216,
+      "endLine": 216,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "1efeb75d4c2f0099535adb2310377af249cd83c7dd0d157d562b7c8cd65c728d"
+      },
+      "sequence": 11
+    },
+    {
+      "eventId": "hook-ce1f5a197149f48f245116b1078e712f",
+      "findingId": "mimosa-ca64e623347ed0a39b51cf28",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.258Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "4362d7edc83f0ba5b1770f171602e36a1b8926d03b290ca05596819e84695cbf",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 233,
+      "endLine": 233,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "4362d7edc83f0ba5b1770f171602e36a1b8926d03b290ca05596819e84695cbf"
+      },
+      "sequence": 12
+    },
+    {
+      "eventId": "hook-7ecfda66a55eff023a59f9f279a4384f",
+      "findingId": "mimosa-9259ee8a0f5c93dffd46cba2",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.258Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "6886572fdabbc98b6522db70ccc6bca24b555878c1719e9864baa95a7925b48d",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 236,
+      "endLine": 236,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "6886572fdabbc98b6522db70ccc6bca24b555878c1719e9864baa95a7925b48d"
+      },
+      "sequence": 13
+    },
+    {
+      "eventId": "hook-7d146a24263b08fac5f35f39568f2036",
+      "findingId": "mimosa-ec8175d95e4fea16f69a4ce2",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "8e91446839bb46d3f6c0f248e09f81be755294de41e6be310fe2ca6687d2b306",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 279,
+      "endLine": 279,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "8e91446839bb46d3f6c0f248e09f81be755294de41e6be310fe2ca6687d2b306"
+      },
+      "sequence": 14
+    },
+    {
+      "eventId": "hook-a057aae52fc930b2dd4e7c359eb5fdac",
+      "findingId": "mimosa-e65226326aa4d823d2f76f15",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "720981afd8471886d43118cd3839d36b2432fcea943508da24fa7bdce1fd4231",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 282,
+      "endLine": 282,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "720981afd8471886d43118cd3839d36b2432fcea943508da24fa7bdce1fd4231"
+      },
+      "sequence": 15
+    },
+    {
+      "eventId": "hook-ecf532173c70fc264e7a71b0dce08202",
+      "findingId": "mimosa-f7477634b41353c0de1f7300",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "43a725dff60ced87249fe8c134a3c544b49b75280e8490a6f967dd08c457ee51",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 290,
+      "endLine": 290,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "43a725dff60ced87249fe8c134a3c544b49b75280e8490a6f967dd08c457ee51"
+      },
+      "sequence": 16
+    },
+    {
+      "eventId": "hook-e9eca508fd77cf59a71b66cba50361b8",
+      "findingId": "mimosa-f7477634b41353c0de1f7300",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "43a725dff60ced87249fe8c134a3c544b49b75280e8490a6f967dd08c457ee51",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 293,
+      "endLine": 293,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "43a725dff60ced87249fe8c134a3c544b49b75280e8490a6f967dd08c457ee51"
+      },
+      "sequence": 17
+    },
+    {
+      "eventId": "hook-3099f44d93a3eea6ae8fa173ff446d9f",
+      "findingId": "mimosa-ac7e8c2118ebf59073135440",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "18e67355f9d6d19dc95cabf563321a3ae6352ffee801f111b4dab907d9da3f45",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 333,
+      "endLine": 333,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "18e67355f9d6d19dc95cabf563321a3ae6352ffee801f111b4dab907d9da3f45"
+      },
+      "sequence": 18
+    },
+    {
+      "eventId": "hook-48e08d2bf628d5c6a4c3f5490fecffd6",
+      "findingId": "mimosa-85bb69569ca60f3f05ff60fd",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ac56a556a2a30dfa7a4f36811d4bb75508f15bb6bd89b993f3e276e1f80597c4",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 342,
+      "endLine": 342,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "ac56a556a2a30dfa7a4f36811d4bb75508f15bb6bd89b993f3e276e1f80597c4"
+      },
+      "sequence": 19
+    },
+    {
+      "eventId": "hook-1bd3aef69ce824d1a062fbb4d952605f",
+      "findingId": "mimosa-97cfe577b481d3bb6e1f8e2a",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "f7396952b250103c1950b19f8de26af3a0da125dc7a9c437b2ed23cf0bcd16a3",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 345,
+      "endLine": 345,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "f7396952b250103c1950b19f8de26af3a0da125dc7a9c437b2ed23cf0bcd16a3"
+      },
+      "sequence": 20
+    },
+    {
+      "eventId": "hook-0bd0e2767fb439ad41616425801c22e5",
+      "findingId": "mimosa-d2ac73353bed87ee2f6ce10c",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "5e034c0821752a639ad803fb6cbfbca9573e615816a37e62a0d8fd4fbd5034ac",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 354,
+      "endLine": 354,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "5e034c0821752a639ad803fb6cbfbca9573e615816a37e62a0d8fd4fbd5034ac"
+      },
+      "sequence": 21
+    },
+    {
+      "eventId": "hook-131668853dc9b8afda7b34974dbf7b6c",
+      "findingId": "mimosa-bf435641ea18296893e39e10",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:11.259Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "95a502dd6217178a9df5b9250e2382b7468419c29a7888a6153fadd72f69b712",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 357,
+      "endLine": 357,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "95a502dd6217178a9df5b9250e2382b7468419c29a7888a6153fadd72f69b712"
+      },
+      "sequence": 22
+    },
+    {
+      "eventId": "hook-b09f78e8f17515efcbd4d0b587ee469c",
+      "findingId": "mimosa-19aab45f87bbc869efd517df",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:45.982Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 105,
+      "endLine": 105,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba"
+      },
+      "sequence": 23
+    },
+    {
+      "eventId": "hook-76fabb53e6e74e7418f5a5ef5715e74f",
+      "findingId": "mimosa-0cf7168f5273f7edd9594101",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:48:45.982Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/validate.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "39e76e3be5f732ed9d1e66ddc1980f6d5c1763129ca08fc57c25c790b11d1f46",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 109,
+      "endLine": 109,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "39e76e3be5f732ed9d1e66ddc1980f6d5c1763129ca08fc57c25c790b11d1f46"
+      },
+      "sequence": 24
+    },
+    {
+      "eventId": "hook-ddb050f214d2c0ba6fb4812f4cb7050f",
+      "findingId": "mimosa-2485fa080ae3f591b297802a",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:49:24.483Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 67,
+      "endLine": 67,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba"
+      },
+      "sequence": 25
+    },
+    {
+      "eventId": "hook-55bdd1d484be4741e508f8ed531d9b1d",
+      "findingId": "mimosa-97af3025195d08826363b0bf",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:49:24.483Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "9d04aedd27bdba05c8fc3b05506ab03ca90d3e50a7ea90cc609ce8d6ec9c8a4b",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 86,
+      "endLine": 86,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "9d04aedd27bdba05c8fc3b05506ab03ca90d3e50a7ea90cc609ce8d6ec9c8a4b"
+      },
+      "sequence": 26
+    },
+    {
+      "eventId": "hook-b64c092cdfb3b2dd06508f96f897b028",
+      "findingId": "mimosa-a3d09780c17fe9ad4563a5cb",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:49:24.483Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "2b7cc89220d8c9869605532eab08548b5ace2e03762c80ebffbcb47394f9c1ad",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 89,
+      "endLine": 89,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "2b7cc89220d8c9869605532eab08548b5ace2e03762c80ebffbcb47394f9c1ad"
+      },
+      "sequence": 27
+    },
+    {
+      "eventId": "hook-33cf6c8ccb76f74f2a457e542700f941",
+      "findingId": "mimosa-e5b458100295d0e79a2a1d43",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:49:24.483Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 94,
+      "endLine": 94,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638"
+      },
+      "sequence": 28
+    },
+    {
+      "eventId": "hook-3050c807cfdbc07c775feefefd2f9acf",
+      "findingId": "mimosa-e5b458100295d0e79a2a1d43",
+      "type": "finding_blocked",
+      "at": "2026-09-28T18:49:24.484Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 97,
+      "endLine": 97,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638"
+      },
+      "sequence": 29
+    },
+    {
+      "eventId": "hook-f0a41540113a3f343a217061780aa6ab",
+      "findingId": "mimosa-2485fa080ae3f591b297802a",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:49:41.654Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 67,
+      "endLine": 67,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "ae4605ac6a24bae466089c569064087e461f992e66a57ed3e9b657917c970aba"
+      },
+      "sequence": 30
+    },
+    {
+      "eventId": "hook-aefde0a6b751ad817078438fef2af346",
+      "findingId": "mimosa-97af3025195d08826363b0bf",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:49:41.654Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "9d04aedd27bdba05c8fc3b05506ab03ca90d3e50a7ea90cc609ce8d6ec9c8a4b",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 86,
+      "endLine": 86,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "9d04aedd27bdba05c8fc3b05506ab03ca90d3e50a7ea90cc609ce8d6ec9c8a4b"
+      },
+      "sequence": 31
+    },
+    {
+      "eventId": "hook-bfe0d2b0dd799c30e99d43d5b36d9a7a",
+      "findingId": "mimosa-a3d09780c17fe9ad4563a5cb",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:49:41.654Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "2b7cc89220d8c9869605532eab08548b5ace2e03762c80ebffbcb47394f9c1ad",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 89,
+      "endLine": 89,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "2b7cc89220d8c9869605532eab08548b5ace2e03762c80ebffbcb47394f9c1ad"
+      },
+      "sequence": 32
+    },
+    {
+      "eventId": "hook-f572156aa6ead239ff87dec2c9b0a714",
+      "findingId": "mimosa-e5b458100295d0e79a2a1d43",
+      "type": "static_fix_verified",
+      "at": "2026-09-28T18:49:41.654Z",
+      "identity": {
+        "projectRelativeFile": "lg-wol/tools/selftest.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 97,
+      "endLine": 97,
+      "reasonCode": "static_rescan_passed",
+      "reportedToAgent": false,
+      "evidence": {
+        "kind": "static_scan",
+        "boundary": "observed",
+        "producer": "deterministic",
+        "evidenceHash": "a4988b7db4388893793753621fe86a1a935d9346323736ab564947e0516ca638"
+      },
+      "sequence": 33
+    }
+  ],
+  "observedFindingIds": [],
+  "verifiedFiles": [
+    {
+      "file": "lg-wol/js/i18n.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "lg-wol/js/app.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "lg-wol/tools/make-icons.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "lg-wol/tools/selftest.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "lg-wol/js/store.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "lg-wol/js/luna.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-09-28T18:55:55.100Z"
+}
